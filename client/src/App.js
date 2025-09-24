@@ -1,117 +1,206 @@
 import React, { useState, useEffect } from 'react';
-import io from 'socket.io-client';
+import socketService from './services/socket';
+import './App.css';
 
 function App() {
-  // NETWORK STATE
-  const [gameState, setGameState] = useState('lobby');
-  const [socket, setSocket] = useState(null);
-  const [connected, setConnected] = useState(false);
-  const [player, setPlayer] = useState(null);
-  const [room, setRoom] = useState(null);
-  const [playerName, setPlayerName] = useState('');
-  const [roomId, setRoomId] = useState('');
-  const [mode, setMode] = useState('create');
-  const [gameData, setGameData] = useState(null);
-  const [myCards, setMyCards] = useState([]);
-  const [isMyTurn, setIsMyTurn] = useState(false);
+    const [connected, setConnected] = useState(false);
+    const [playerName, setPlayerName] = useState('');
+    const [roomId, setRoomId] = useState('');
+    const [inRoom, setInRoom] = useState(false);
+    const [currentRoom, setCurrentRoom] = useState('');
+    const [gameState, setGameState] = useState(null);
+    const [messages, setMessages] = useState([]);
+    const [newMessage, setNewMessage] = useState('');
 
-  // UI STATE
-  const [theme, setTheme] = useState('dark');
-  const [showChat, setShowChat] = useState(false);
-  const [chatMessages, setChatMessages] = useState([]);
-  const [chatInput, setChatInput] = useState('');
-  const [showColorPicker, setShowColorPicker] = useState(false);
-  const [pendingWildCard, setPendingWildCard] = useState(null);
+    useEffect(() => {
+        // Connect to server
+        socketService.connect().then(() => {
+            setConnected(true);
+        });
 
-  // SOCKET CONNECTION
-  useEffect(() => {
-    console.log('🔗 Initializing socket connection...');
-    
-    const socketInstance = io('http://localhost:3003', {
-      transports: ['websocket', 'polling']
-    });
+        // Setup event listeners
+        socketService.onRoomCreated((data) => {
+            setInRoom(true);
+            setCurrentRoom(data.roomId);
+            setMessages(prev => [...prev, { type: 'system', message: `Room ${data.roomId} created!` }]);
+        });
 
-    socketInstance.on('connect', () => {
-      setConnected(true);
-      console.log('✅ Connected to server');
-    });
+        socketService.onRoomJoined((data) => {
+            setInRoom(true);
+            setCurrentRoom(data.room.id);
+            setMessages(prev => [...prev, { type: 'system', message: `Joined room ${data.room.id}!` }]);
+        });
 
-    socketInstance.on('disconnect', () => {
-      setConnected(false);
-      console.log('❌ Disconnected from server');
-    });
+        socketService.onPlayerJoined((data) => {
+            setMessages(prev => [...prev, { type: 'system', message: `${data.player.name} joined the game!` }]);
+        });
 
-    socketInstance.on('roomCreated', (data) => {
-      console.log('🏠 Room created:', data);
-      setRoom(data.room);
-      setPlayer(data.room.players[0]);
-      setGameState('waiting');
-    });
+        socketService.onGameUpdate((state) => {
+            setGameState(state);
+        });
 
-    socketInstance.on('roomJoined', (data) => {
-      console.log('🚪 Room joined:', data);
-      setRoom(data.room);
-      setPlayer(data.player);
-      setGameState('waiting');
-    });
+        socketService.onChatMessage((data) => {
+            setMessages(prev => [...prev, { type: 'chat', player: data.player, message: data.message }]);
+        });
 
-    socketInstance.on('playerJoined', (data) => {
-      console.log('👤 Player joined:', data);
-      setRoom(prevRoom => ({
-        ...prevRoom,
-        players: [...(prevRoom?.players || []), data.player]
-      }));
-    });
+        socketService.onGameStarted(() => {
+            setMessages(prev => [...prev, { type: 'system', message: '🎮 Game Started! Cards dealt!' }]);
+        });
 
-    socketInstance.on('gameStarted', (data) => {
-      console.log('🎮 Game started:', data);
-      setGameState('playing');
-    });
+        return () => {
+            socketService.disconnect();
+        };
+    }, []);
 
-    socketInstance.on('gameUpdate', (data) => {
-      console.log('📊 Game update received:', data);
-      setGameData(data);
-      setMyCards(data.myCards || []);
-      setIsMyTurn(data.isMyTurn || false);
-    });
+    const handleJoinRoom = () => {
+        if (!playerName.trim()) {
+            alert('Please enter your name!');
+            return;
+        }
 
-    socketInstance.on('gameWon', (data) => {
-      console.log('🏆 Game won:', data);
-      showWinAnimation(data.winner);
-      setTimeout(() => {
-        setGameState('lobby');
-        setRoom(null);
-        setPlayer(null);
-        setGameData(null);
-        setMyCards([]);
-        setChatMessages([]);
-      }, 5000);
-    });
-
-    socketInstance.on('unoAlert', (data) => {
-      showUnoAlert(data.message);
-    });
-
-    socketInstance.on('chatMessage', (message) => {
-      setChatMessages(prev => [...prev, {
-        player: message.player,
-        message: message.message,
-        timestamp: message.timestamp,
-        type: message.type || 'player'
-      }]);
-    });
-
-    socketInstance.on('error', (error) => {
-      console.error('❌ Socket error:', error);
-    });
-
-    setSocket(socketInstance);
-
-    return () => {
-      console.log('🔌 Closing socket connection');
-      socketInstance.close();
+        if (roomId.trim()) {
+            socketService.joinRoom(roomId.trim(), playerName.trim());
+        } else {
+            socketService.createRoom(playerName.trim());
+        }
     };
-  }, []);
+
+    const handlePlayCard = (card) => {
+        let chosenColor = null;
+        if (card.color === 'wild') {
+            chosenColor = prompt('Choose color: red, blue, green, yellow');
+            if (!['red', 'blue', 'green', 'yellow'].includes(chosenColor?.toLowerCase())) {
+                alert('Invalid color!');
+                return;
+            }
+            chosenColor = chosenColor.toLowerCase();
+        }
+        socketService.playCard(card.id, chosenColor);
+    };
+
+    const handleDrawCard = () => {
+        socketService.drawCard();
+    };
+
+    const handleSendMessage = () => {
+        if (newMessage.trim()) {
+            socketService.sendMessage(newMessage.trim());
+            setNewMessage('');
+        }
+    };
+
+    if (!connected) {
+        return (
+            <div className="App">
+                <header className="App-header">
+                    <h1>🎮 Ghostzzz UNO</h1>
+                    <p>Connecting to server...</p>
+                </header>
+            </div>
+        );
+    }
+
+    if (!inRoom) {
+        return (
+            <div className="App">
+                <header className="App-header">
+                    <h1>🎮 Ghostzzz UNO</h1>
+                    <p>✅ Connected to server!</p>
+                    
+                    <div className="join-form">
+                        <h2>Join Game</h2>
+                        <input
+                            type="text"
+                            placeholder="Your name"
+                            value={playerName}
+                            onChange={(e) => setPlayerName(e.target.value)}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Room code (optional)"
+                            value={roomId}
+                            onChange={(e) => setRoomId(e.target.value)}
+                        />
+                        <button onClick={handleJoinRoom}>
+                            {roomId ? 'Join Room' : 'Create New Room'}
+                        </button>
+                    </div>
+                </header>
+            </div>
+        );
+    }
+
+    return (
+        <div className="App">
+            <header className="App-header">
+                <h1>🎮 Ghostzzz UNO</h1>
+                <h2>Room: {currentRoom}</h2>
+                
+                {gameState && (
+                    <div className="game-status">
+                        <p>Players: {gameState.players?.length || 0}/4</p>
+                        <p>Current: {gameState.currentPlayerName || 'Waiting'}</p>
+                        <p>Status: {gameState.gameState || 'waiting'}</p>
+                    </div>
+                )}
+
+                {gameState?.topCard && (
+                    <div className="current-card">
+                        <h3>Current Card:</h3>
+                        <div className={`card ${gameState.topCard.color}`}>
+                            {gameState.topCard.color} {gameState.topCard.value}
+                        </div>
+                    </div>
+                )}
+
+                {gameState?.myCards && (
+                    <div className="player-cards">
+                        <h3>Your Cards:</h3>
+                        <div className="cards-container">
+                            {gameState.myCards.map(card => (
+                                <div
+                                    key={card.id}
+                                    className={`card ${card.color}`}
+                                    onClick={() => handlePlayCard(card)}
+                                >
+                                    {card.color} {card.value}
+                                </div>
+                            ))}
+                        </div>
+                        <button onClick={handleDrawCard}>Draw Card</button>
+                    </div>
+                )}
+
+                <div className="chat-section">
+                    <h3>Chat:</h3>
+                    <div className="messages">
+                        {messages.map((msg, idx) => (
+                            <div key={idx} className={`message ${msg.type}`}>
+                                {msg.type === 'chat' 
+                                    ? `${msg.player}: ${msg.message}` 
+                                    : msg.message
+                                }
+                            </div>
+                        ))}
+                    </div>
+                    <div className="message-input">
+                        <input
+                            type="text"
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                            placeholder="Type message..."
+                        />
+                        <button onClick={handleSendMessage}>Send</button>
+                    </div>
+                </div>
+            </header>
+        </div>
+    );
+}
+
+
+
 
   // GAME FUNCTIONS
   const createRoom = () => {
@@ -1518,6 +1607,6 @@ function App() {
       </div>
     </div>
   );
-}
+
 
 export default App;

@@ -1,0 +1,158 @@
+.App {
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: white;
+}
+
+.App-header {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.join-form {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 15px;
+  max-width: 400px;
+  margin: 20px auto;
+}
+
+.join-form input {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.join-form button {
+  background: #4CAF50;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.join-form button:hover {
+  background: #45a049;
+}
+
+.game-status {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  margin: 20px 0;
+}
+
+.current-card {
+  margin: 20px 0;
+}
+
+.player-cards {
+  margin: 20px 0;
+}
+
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.card {
+  padding: 15px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  min-width: 80px;
+  border: 2px solid #333;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.card.red { background-color: #ff4444; color: white; }
+.card.blue { background-color: #4444ff; color: white; }
+.card.green { background-color: #44ff44; color: black; }
+.card.yellow { background-color: #ffff44; color: black; }
+.card.wild { background-color: #333; color: white; }
+
+.chat-section {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.messages {
+  height: 200px;
+  overflow-y: auto;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.message {
+  margin: 5px 0;
+  padding: 5px;
+}
+
+.message.system {
+  color: #ffeb3b;
+  font-style: italic;
+}
+
+.message.chat {
+  color: #fff;
+}
+
+.message-input {
+  display: flex;
+  gap: 10px;
+}
+
+.message-input input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+}
+
+.message-input button {
+  background: #2196F3;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 5px;
+  font-size: 14px;
+}
+
+button:hover {
+  opacity: 0.9;
+}
