@@ -565,9 +565,10 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3003;
-httpServer.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Complete UNO Game Server with Fixed Reverse for ALL Players running on port ${PORT}`);
-  console.log(`🔄 Reverse card now works for 2-player and 3+ player games!`);
-  console.log(`🃏 All features: Skip, Reverse, Draw 2, Draw 4, Chat, Themes!`);
+
+const PORT = process.env.PORT || 3000;
+
+httpServer.listen(PORT, () => {
+    console.log(`🎮 UNO Server running on port ${PORT}`);
+    console.log(`🌐 Server ready for connections!`);
 });
