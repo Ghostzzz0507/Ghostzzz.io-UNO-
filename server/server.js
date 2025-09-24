@@ -7,19 +7,20 @@ const app = express();
 const httpServer = createServer(app);
 
 app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST"],
-  credentials: true
+    origin: ["", "*"],
+    methods: ["GET", "POST"],
+    credentials: true
 }));
 
 const io = new Server(httpServer, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-    credentials: true
-  },
-  transports: ['websocket', 'polling']
+    cors: {
+        origin: ["https://your-app-name.onrender.com", "*"],
+        methods: ["GET", "POST"],
+        credentials: true
+    },
+    transports: ['websocket', 'polling']  // This is already in your code
 });
+
 
 // Complete UNO Game Manager with Fixed Reverse for All Player Counts
 class CompleteUnoGame {
@@ -564,6 +565,7 @@ io.on('connection', (socket) => {
     console.log('👋 Player disconnected:', socket.id);
   });
 });
+
 
 
 const PORT = process.env.PORT || 3000;

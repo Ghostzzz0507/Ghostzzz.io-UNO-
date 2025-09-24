@@ -1,7 +1,7 @@
 {
   "name": "ghostzzz-uno-server",
   "version": "1.0.0",
-  "description": "Ghostzzz UNO Multiplayer Server",
+  "description": "Ghostzzz UNO Multiplayer Server 2025",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -16,7 +16,7 @@
   "engines": {
     "node": "20.x"
   },
-  "keywords": ["uno", "multiplayer", "socket.io", "game"],
+  "keywords": ["uno", "multiplayer", "socket.io", "game", "ghostzzz"],
   "author": "Ghostzzz",
   "license": "MIT"
 }
