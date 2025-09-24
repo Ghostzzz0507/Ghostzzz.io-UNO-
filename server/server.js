@@ -7,20 +7,64 @@ const app = express();
 const httpServer = createServer(app);
 
 app.use(cors({
-    origin: ["https://ghostzzz-io-uno.onrender.com/", "*"],
+    origin: "*",
     methods: ["GET", "POST"],
     credentials: true
 }));
 
+// Socket.IO with Render-specific configuration
 const io = new Server(httpServer, {
     cors: {
-        origin: ["https://ghostzzz-io-uno.onrender.com/", "*"],
+        origin: "*",
         methods: ["GET", "POST"],
         credentials: true
     },
-    transports: ['websocket', 'polling']  // This is already in your code
+    transports: ['polling', 'websocket'], // Polling first
+    allowEIO3: true, // For compatibility
+    pingTimeout: 60000, // Increase timeout
+    pingInterval: 25000
 });
 
+
+// Make sure server listens on correct port
+httpServer.listen(PORT, () => {
+    console.log(`🎮 Ghostzzz UNO Server running on port ${PORT}`);
+});
+
+app.get('/', (req, res) => {
+    res.send(`
+        <html>
+            <head>
+                <title>Ghostzzz UNO Server</title>
+                <style>
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        text-align: center; 
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 50px;
+                    }
+                    .server-info { 
+                        background: rgba(255,255,255,0.1); 
+                        padding: 30px; 
+                        border-radius: 15px; 
+                        max-width: 500px; 
+                        margin: 0 auto;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="server-info">
+                    <h1>🎮 Ghostzzz UNO Server</h1>
+                    <h2>🚀 Server is Running!</h2>
+                    <p>Multiplayer UNO game server powered by Socket.IO</p>
+                    <p><strong>Status:</strong> ✅ Online</p>
+                    <p>Connect your UNO client to start playing!</p>
+                </div>
+            </body>
+        </html>
+    `);
+});
 
 // Complete UNO Game Manager with Fixed Reverse for All Player Counts
 class CompleteUnoGame {
@@ -519,6 +563,8 @@ handleActionCard(room, card, playerName) {
     this.players.delete(playerId);
   }
 }
+
+
 
 const game = new CompleteUnoGame();
 
