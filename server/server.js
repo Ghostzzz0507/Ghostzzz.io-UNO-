@@ -613,11 +613,3 @@ io.on('connection', (socket) => {
   });
 });
 
-
-
-
-
-httpServer.listen(PORT, () => {
-    console.log(`🎮 UNO Server running on port ${PORT}`);
-    console.log(`🌐 Server ready for connections!`);
-});
