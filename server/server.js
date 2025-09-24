@@ -7,14 +7,14 @@ const app = express();
 const httpServer = createServer(app);
 
 app.use(cors({
-    origin: ["", "*"],
+    origin: ["https://ghostzzz-io-uno.onrender.com/", "*"],
     methods: ["GET", "POST"],
     credentials: true
 }));
 
 const io = new Server(httpServer, {
     cors: {
-        origin: ["https://your-app-name.onrender.com", "*"],
+        origin: ["https://ghostzzz-io-uno.onrender.com/", "*"],
         methods: ["GET", "POST"],
         credentials: true
     },
